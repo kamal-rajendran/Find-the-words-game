@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find the Words Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #game {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .letter-set {
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        #wordInput {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        #submitWord {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #submitWord:hover {
+            background-color: #0056b3;
+        }
+        #scoreBoard {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game">
+    <h1>Find the Words Game</h1>
+    <div class="letter-set" id="letters"></div>
+    <input type="text" id="wordInput" placeholder="Enter a word..." />
+    <button id="submitWord">Submit Word</button>
+    <div id="scoreBoard"></div>
+    <button id="nextRound" style="display:none;">Next Round</button>
+</div>
+
+<script>
+    const rounds = [
+        ['R', 'T', 'A', 'E', 'C', 'S', 'I', 'O', 'N'],
+        ['P', 'L', 'A', 'C', 'E', 'T', 'I', 'S'],
+        ['A', 'D', 'R', 'V', 'E', 'T']
+    ];
+
+    let currentRound = 0;
+    let score = 0;
+    let validWords = [];
+
+    function displayLetters() {
+        const lettersDiv = document.getElementById('letters');
+        lettersDiv.innerText = `Letters: ${rounds[currentRound].join(' ')}`;
+    }
+
+    function isValidWord(word) {
+        // Minimum length of 3 characters
+        return word.length >= 3 && !validWords.includes(word.toUpperCase());
+    }
+
+    document.getElementById('submitWord').addEventListener('click', () => {
+        const wordInput = document.getElementById('wordInput').value.toUpperCase();
+        if (isValidWord(wordInput)) {
+            validWords.push(wordInput);
+            score += wordInput.length - 2; // 1 point for 3 letters, 2 for 4 letters, etc.
+            document.getElementById('scoreBoard').innerHTML = `Score: ${score} | Words: ${validWords.join(', ')}`;
+            document.getElementById('wordInput').value = '';
+        } else {
+            alert('Invalid word! Must be at least 3 letters and unique.');
+        }
+    });
+
+    document.getElementById('nextRound').addEventListener('click', () => {
+        currentRound++;
+        if (currentRound < rounds.length) {
+            validWords = [];
+            score = 0;
+            displayLetters();
+            document.getElementById('scoreBoard').innerHTML = '';
+            document.getElementById('nextRound').style.display = 'none';
+        } else {
+            alert('Game Over! Your final score is ' + score);
+            document.getElementById('game').innerHTML = '<h1>Thank you for playing!</h1>';
+        }
+    });
+
+    displayLetters();
+</script>
+
+</body>
+</html>
