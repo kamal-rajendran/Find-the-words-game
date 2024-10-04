@@ -18,6 +18,8 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            margin: auto;
         }
         h1 {
             text-align: center;
@@ -32,15 +34,18 @@
             padding: 10px;
             margin: 10px 0;
         }
-        #submitWord, #nextRound {
+        #submitWord, #nextRound, #startGame {
             padding: 10px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
         }
-        #submitWord:hover, #nextRound:hover {
+        #submitWord:hover, #nextRound:hover, #startGame:hover {
             background-color: #0056b3;
         }
         #scoreBoard {
@@ -57,12 +62,26 @@
 
 <div id="game">
     <h1>Find the Words Game</h1>
+    <div>
+        <label for="playerName">Enter Your Name:</label>
+        <input type="text" id="playerName" placeholder="Your Name" />
+    </div>
+    <div>
+        <label for="difficulty">Select Difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button id="startGame">Start Game</button>
+    </div>
     <div class="letter-set" id="letters"></div>
     <div id="timer">Time Left: <span id="timeLeft">60</span> seconds</div>
     <input type="text" id="wordInput" placeholder="Enter a word..." />
     <button id="submitWord">Submit Word</button>
     <div id="scoreBoard"></div>
     <button id="nextRound" style="display:none;">Next Round</button>
+    <div id="results" style="margin-top: 20px;"></div>
 </div>
 
 <script>
@@ -76,10 +95,11 @@
     let currentRound = 0;
     let score = 0;
     let validWords = [];
-    let correctCount = 10;
-    let wrongCount = 3;
+    let correctCount = 0;
+    let wrongCount = 0;
     let timeLeft = 60;
     let timer;
+    let playerName = '';
 
     function displayLetters() {
         const lettersDiv = document.getElementById('letters');
@@ -91,18 +111,48 @@
     }
 
     function startTimer() {
-        timeLeft = 60;
+        switch (currentLevel) {
+            case 'easy':
+                timeLeft = 60;
+                break;
+            case 'medium':
+                timeLeft = 45;
+                break;
+            case 'hard':
+                timeLeft = 30;
+                break;
+        }
         document.getElementById('timeLeft').innerText = timeLeft;
         timer = setInterval(() => {
             timeLeft--;
             document.getElementById('timeLeft').innerText = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(timer);
-                alert('Time’s up! Proceeding to the next round.');
                 document.getElementById('nextRound').style.display = 'block';
+                document.getElementById('submitWord').disabled = true;
             }
         }, 1000);
     }
+
+    document.getElementById('startGame').addEventListener('click', () => {
+        playerName = document.getElementById('playerName').value.trim();
+        if (!playerName) {
+            alert('Please enter your name to start the game.');
+            return;
+        }
+        currentLevel = document.getElementById('difficulty').value;
+        currentRound = 0;
+        score = 0;
+        validWords = [];
+        correctCount = 0;
+        wrongCount = 0;
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('scoreBoard').innerHTML = '';
+        displayLetters();
+        startTimer();
+        document.getElementById('startGame').style.display = 'none';
+        document.getElementById('nextRound').style.display = 'none';
+    });
 
     document.getElementById('submitWord').addEventListener('click', () => {
         const wordInput = document.getElementById('wordInput').value.toUpperCase();
@@ -113,7 +163,6 @@
             document.getElementById('scoreBoard').innerHTML = `Score: ${score} | Correct: ${correctCount} | Wrong: ${wrongCount} | Words: ${validWords.join(', ')}`;
             document.getElementById('wordInput').value = '';
         } else {
-            alert('Invalid word! Must be at least 3 letters and unique.');
             wrongCount++;
             document.getElementById('scoreBoard').innerHTML = `Score: ${score} | Correct: ${correctCount} | Wrong: ${wrongCount} | Words: ${validWords.join(', ')}`;
         }
@@ -127,16 +176,22 @@
             displayLetters();
             document.getElementById('scoreBoard').innerHTML = '';
             document.getElementById('nextRound').style.display = 'none';
+            document.getElementById('submitWord').disabled = false;
             startTimer();
         } else {
-            alert('Game Over! Your final score is ' + score + '. Correct: ' + correctCount + ', Wrong: ' + wrongCount);
-            document.getElementById('game').innerHTML = '<h1>Thank you for playing!</h1>';
+            endGame();
         }
     });
 
-    // Start the game
-    displayLetters();
-    startTimer();
+    function endGame() {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `<h2>Game Over, ${playerName}!</h2>
+                                <p>Your final score is ${score}.</p>
+                                <p>Correct: ${correctCount}, Wrong: ${wrongCount}</p>
+                                <p>Words found: ${validWords.join(', ')}</p>`;
+        document.getElementById('game').innerHTML += '<button id="restartGame">Restart Game</button>';
+        document.getElementById('restartGame').addEventListener('click', () => location.reload());
+    }
 </script>
 
 </body>
